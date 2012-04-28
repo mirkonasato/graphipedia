@@ -24,12 +24,12 @@ package org.graphipedia.dataimport.neo4j;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.neo4j.graphdb.index.BatchInserterIndex;
-import org.neo4j.graphdb.index.BatchInserterIndexProvider;
 import org.neo4j.helpers.collection.MapUtil;
-import org.neo4j.index.impl.lucene.LuceneBatchInserterIndexProvider;
-import org.neo4j.kernel.impl.batchinsert.BatchInserter;
-import org.neo4j.kernel.impl.batchinsert.BatchInserterImpl;
+import org.neo4j.unsafe.batchinsert.BatchInserter;
+import org.neo4j.unsafe.batchinsert.BatchInserterIndex;
+import org.neo4j.unsafe.batchinsert.BatchInserterIndexProvider;
+import org.neo4j.unsafe.batchinsert.BatchInserters;
+import org.neo4j.unsafe.batchinsert.LuceneBatchInserterIndexProvider;
 
 public class ImportGraph {
 
@@ -38,21 +38,22 @@ public class ImportGraph {
     private final Map<String, Long> inMemoryIndex;
 
     public ImportGraph(String dataDir) {
-        inserter = new BatchInserterImpl(dataDir);
+        inserter = BatchInserters.inserter(dataDir);
+        final BatchInserterIndexProvider indexProvider = new LuceneBatchInserterIndexProvider(inserter);
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
+                indexProvider.shutdown();
                 inserter.shutdown();
             }
         });
-        
-        BatchInserterIndexProvider indexProvider = new LuceneBatchInserterIndexProvider(inserter);
+
         index = indexProvider.nodeIndex("pages", MapUtil.stringMap("type", "exact", "to_lower_case", "false"));
         inMemoryIndex = new HashMap<String, Long>(12100000);
     }
 
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
-            System.out.println("USAGE: CreateNodes <input-file> <data-dir>");
+            System.out.println("USAGE: ImportGraph <input-file> <data-dir>");
             System.exit(255);
         }
         String inputFile = args[0];

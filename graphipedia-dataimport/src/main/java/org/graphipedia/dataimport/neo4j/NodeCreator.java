@@ -26,9 +26,9 @@ import java.util.Map;
 
 import org.graphipedia.dataimport.ProgressCounter;
 import org.graphipedia.dataimport.SimpleStaxParser;
-import org.neo4j.graphdb.index.BatchInserterIndex;
 import org.neo4j.helpers.collection.MapUtil;
-import org.neo4j.kernel.impl.batchinsert.BatchInserter;
+import org.neo4j.unsafe.batchinsert.BatchInserter;
+import org.neo4j.unsafe.batchinsert.BatchInserterIndex;
 
 public class NodeCreator extends SimpleStaxParser {
 
