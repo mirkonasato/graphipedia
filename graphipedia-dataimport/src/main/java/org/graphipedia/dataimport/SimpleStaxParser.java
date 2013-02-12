@@ -21,17 +21,18 @@
 //
 package org.graphipedia.dataimport;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.codehaus.stax2.XMLInputFactory2;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
-
-import org.codehaus.stax2.XMLInputFactory2;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 public abstract class SimpleStaxParser {
 
@@ -46,15 +47,39 @@ public abstract class SimpleStaxParser {
     protected abstract void handleElement(String element, String value);
 
     public void parse(String fileName) throws IOException, XMLStreamException {
-        FileInputStream inputStream = new FileInputStream(fileName);
-        XMLStreamReader reader = XML_INPUT_FACTORY.createXMLStreamReader(inputStream, "UTF-8");
-        try {
-            parseElements(reader);
-        } finally {
-            reader.close();
-            inputStream.close();
-        }
+        final FileInputStream fileStream = new FileInputStream(fileName);
+
+	    // Try to decompress bzip2 inputs on the fly
+	    if (fileName.toLowerCase().endsWith(".bz2")) {
+		    // Need to use the Bzip2CompressorInputStream directly rather than CompressorStreamFactory because
+		    // it doesn't support reading concatenated bzip2 streams
+		    BZip2CompressorInputStream bzipStream = new BZip2CompressorInputStream(fileStream, true);
+
+		    parse(bzipStream);
+	    }
+	    else {
+		    // Assume not compressed
+		    parse(fileStream);
+	    }
     }
+
+	/**
+	 * Parses the XML from the provided inputStream, closing it when finished
+	 * @param inputStream an InputStream containing UTF-8 encoded XML
+	 * @throws IOException if an error occurs closing the file
+	 * @throws XMLStreamException if an error occurs reading XML from the stream
+	 */
+	public void parse(InputStream inputStream) throws IOException, XMLStreamException {
+		final XMLStreamReader reader = XML_INPUT_FACTORY.createXMLStreamReader(inputStream, "UTF-8");
+
+		try {
+			parseElements(reader);
+		}
+		finally {
+			reader.close();
+			inputStream.close();
+		}
+	}
 
     private void parseElements(XMLStreamReader reader) throws XMLStreamException {
         LinkedList<String> elementStack = new LinkedList<String>();
