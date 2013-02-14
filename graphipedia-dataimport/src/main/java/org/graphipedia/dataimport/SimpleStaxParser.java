@@ -28,6 +28,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,19 +42,22 @@ public abstract class SimpleStaxParser {
     private final List<String> interestingElements;
 
     public SimpleStaxParser(List<String> interestingElements) {
-        this.interestingElements = interestingElements;
+	    this.interestingElements = interestingElements;
     }
 
     protected abstract void handleElement(String element, String value);
 
     public void parse(String fileName) throws IOException, XMLStreamException {
-        final FileInputStream fileStream = new FileInputStream(fileName);
+        final InputStream fileStream = new FileInputStream(fileName);
 
 	    // Try to decompress bzip2 inputs on the fly
 	    if (fileName.toLowerCase().endsWith(".bz2")) {
+		    // We need to buffer the file because BZip2 doesn't do that natively
+		    final InputStream bufferedStream = new BufferedInputStream(fileStream);
+
 		    // Need to use the Bzip2CompressorInputStream directly rather than CompressorStreamFactory because
 		    // it doesn't support reading concatenated bzip2 streams
-		    BZip2CompressorInputStream bzipStream = new BZip2CompressorInputStream(fileStream, true);
+		    BZip2CompressorInputStream bzipStream = new BZip2CompressorInputStream(bufferedStream, true);
 
 		    parse(bzipStream);
 	    }
