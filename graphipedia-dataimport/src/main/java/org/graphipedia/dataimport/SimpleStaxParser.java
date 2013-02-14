@@ -21,67 +21,59 @@
 //
 package org.graphipedia.dataimport;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.codehaus.stax2.XMLInputFactory2;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
-import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 
 public abstract class SimpleStaxParser {
+	private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory2.newInstance();
 
-    private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory2.newInstance();
+    private final Collection<String> interestingElements;
 
-    private final List<String> interestingElements;
-
-    public SimpleStaxParser(List<String> interestingElements) {
+    public SimpleStaxParser(Collection<String> interestingElements) {
 	    this.interestingElements = interestingElements;
     }
 
     protected abstract void handleElement(String element, String value);
 
-    public void parse(String fileName) throws IOException, XMLStreamException {
-        final InputStream fileStream = new FileInputStream(fileName);
+	public void parse(String fileName) throws IOException, XMLStreamException {
+		final InputStream inputStream = new FileInputStream(fileName);
 
-	    // Try to decompress bzip2 inputs on the fly
-	    if (fileName.toLowerCase().endsWith(".bz2")) {
-		    // We need to buffer the file because BZip2 doesn't do that natively
-		    final InputStream bufferedStream = new BufferedInputStream(fileStream);
-
-		    // Need to use the Bzip2CompressorInputStream directly rather than CompressorStreamFactory because
-		    // it doesn't support reading concatenated bzip2 streams
-		    BZip2CompressorInputStream bzipStream = new BZip2CompressorInputStream(bufferedStream, true);
-
-		    parse(bzipStream);
-	    }
-	    else {
-		    // Assume not compressed
-		    parse(fileStream);
-	    }
-    }
+		parse(inputStream);
+	}
 
 	/**
 	 * Parses the XML from the provided inputStream, closing it when finished
+	 *
 	 * @param inputStream an InputStream containing UTF-8 encoded XML
-	 * @throws IOException if an error occurs closing the file
+	 * @throws java.io.IOException if an error occurs closing the file
 	 * @throws XMLStreamException if an error occurs reading XML from the stream
 	 */
 	public void parse(InputStream inputStream) throws IOException, XMLStreamException {
 		final XMLStreamReader reader = XML_INPUT_FACTORY.createXMLStreamReader(inputStream, "UTF-8");
 
 		try {
+			parse(reader);
+		}
+		finally {
+			inputStream.close();
+		}
+	}
+
+	public void parse(XMLStreamReader reader) throws XMLStreamException {
+		try {
 			parseElements(reader);
 		}
 		finally {
 			reader.close();
-			inputStream.close();
 		}
 	}
 
