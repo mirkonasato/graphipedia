@@ -23,6 +23,7 @@ package org.graphipedia.dataimport;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -35,6 +36,7 @@ import org.codehaus.stax2.XMLInputFactory2;
 
 public abstract class SimpleStaxParser {
 
+    private static final String STDIN_FILENAME = "-";
     private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory2.newInstance();
 
     private final List<String> interestingElements;
@@ -46,7 +48,14 @@ public abstract class SimpleStaxParser {
     protected abstract void handleElement(String element, String value);
 
     public void parse(String fileName) throws IOException, XMLStreamException {
-        FileInputStream inputStream = new FileInputStream(fileName);
+        if (STDIN_FILENAME.equals(fileName)) {
+            parse(System.in);
+        } else {
+            parse(new FileInputStream(fileName));
+        }
+    }
+
+    private void parse(InputStream inputStream) throws IOException, XMLStreamException {
         XMLStreamReader reader = XML_INPUT_FACTORY.createXMLStreamReader(inputStream, "UTF-8");
         try {
             parseElements(reader);
