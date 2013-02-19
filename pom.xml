@@ -10,7 +10,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <neo4j.version>1.8</neo4j.version>
+    <neo4j.version>1.8.1</neo4j.version>
   </properties>
 
   <modules>
