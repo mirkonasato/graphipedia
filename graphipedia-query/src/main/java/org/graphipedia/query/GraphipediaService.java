@@ -31,8 +31,8 @@ import org.neo4j.graphdb.Expander;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.index.Index;
-import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.neo4j.kernel.Traversal;
 
 public class GraphipediaService {
@@ -43,7 +43,7 @@ public class GraphipediaService {
     private final Index<Node> index;
 
     public GraphipediaService(String storeDir) {
-        db = new EmbeddedGraphDatabase(storeDir);
+        db = new GraphDatabaseFactory().newEmbeddedDatabase(storeDir);
         registerShutdownHook(db);
         index = db.index().forNodes("pages");
     }

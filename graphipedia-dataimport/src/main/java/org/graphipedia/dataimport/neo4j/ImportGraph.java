@@ -25,11 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.neo4j.helpers.collection.MapUtil;
+import org.neo4j.index.lucene.unsafe.batchinsert.LuceneBatchInserterIndexProvider;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserterIndex;
 import org.neo4j.unsafe.batchinsert.BatchInserterIndexProvider;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
-import org.neo4j.unsafe.batchinsert.LuceneBatchInserterIndexProvider;
 
 public class ImportGraph {
 
@@ -48,7 +48,7 @@ public class ImportGraph {
         });
 
         index = indexProvider.nodeIndex("pages", MapUtil.stringMap("type", "exact", "to_lower_case", "false"));
-        inMemoryIndex = new HashMap<String, Long>(12100000);
+        inMemoryIndex = new HashMap<String, Long>();
     }
 
     public static void main(String[] args) throws Exception {
