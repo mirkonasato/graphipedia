@@ -28,20 +28,17 @@ import org.graphipedia.dataimport.ProgressCounter;
 import org.graphipedia.dataimport.SimpleStaxParser;
 import org.neo4j.helpers.collection.MapUtil;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
-import org.neo4j.unsafe.batchinsert.BatchInserterIndex;
 
 public class NodeCreator extends SimpleStaxParser {
 
     private final BatchInserter inserter;
-    private final BatchInserterIndex index;
     private final Map<String, Long> inMemoryIndex;
 
     private final ProgressCounter pageCounter = new ProgressCounter();
 
-    public NodeCreator(BatchInserter inserter, BatchInserterIndex index, Map<String, Long> inMemoryIndex) {
+    public NodeCreator(BatchInserter inserter, Map<String, Long> inMemoryIndex) {
         super(Arrays.asList("t"));
         this.inserter = inserter;
-        this.index = index;
         this.inMemoryIndex = inMemoryIndex;
     }
 
@@ -58,13 +55,9 @@ public class NodeCreator extends SimpleStaxParser {
 
     private void createNode(String title) {
         Map<String, Object> properties = MapUtil.map("title", title);
-        long nodeId = inserter.createNode(properties);
-        index.add(nodeId, properties);
+        long nodeId = inserter.createNode(properties, WikiLabel.Page);
         inMemoryIndex.put(title, nodeId);
         pageCounter.increment();
-        if (pageCounter.getCount() % 50000 == 0) {
-            index.flush();
-        }
     }
 
 }

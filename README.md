@@ -1,8 +1,7 @@
 Graphipedia
 ===========
 
-A set of tools for creating a graph database of Wikipedia pages and the links
-between them.
+A tool for creating a graph database of Wikipedia pages and the links between them.
 
 Importing Data
 --------------
@@ -28,9 +27,24 @@ Assuming you downloaded `pages-articles.xml.bz2`, follow these steps:
 Just to give an idea, enwiki-20130204-pages-articles.xml.bz2 is 9.1G and
 contains almost 10M pages, resulting in over 92M links to be extracted.
 
-The import took 31m 42s to decompress/ExtractLinks (pretty much the same time
-as decompressing only) and 10m 42s to ImportGraph on a T420 laptop running
-Linux _with an SSD drive_.
+On my laptop _with an SSD drive_ the import takes about 30 minutes to decompress/ExtractLinks (pretty much the same time
+as decompressing only) and an additional 10 minutes to ImportGraph.
 
-(Note that disk I/O is the critical factor here: the same import will easily
-take several hours with an old 5400RPM drive.)
+(Note that disk I/O is the critical factor here: the same import will easily take several hours with an old 5400RPM drive.)
+
+Querying
+--------
+
+The [Neo4j browser](http://blog.neo4j.org/2013/10/neo4j-200-m06-introducing-neo4js-browser.html) can be used to query and visualise
+the imported graph. Here are some sample Cypher queries.
+
+Show all pages linked to a given starting page - e.g. "Neo4j":
+
+    MATCH (p0:Page {title:'Neo4j'}) -[Link]- (p:Page)
+    RETURN p0, p
+
+Find how two pages - e.g. "Neo4j" and "Kevin Bacon" - are connected:
+
+    MATCH (p0:Page {title:'Neo4j'}), (p1:Page {title:'Kevin Bacon'}),
+      p = shortestPath((p0)-[*..6]-(p1))
+    RETURN p

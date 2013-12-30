@@ -24,30 +24,17 @@ package org.graphipedia.dataimport.neo4j;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.neo4j.helpers.collection.MapUtil;
-import org.neo4j.index.lucene.unsafe.batchinsert.LuceneBatchInserterIndexProvider;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
-import org.neo4j.unsafe.batchinsert.BatchInserterIndex;
-import org.neo4j.unsafe.batchinsert.BatchInserterIndexProvider;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 
 public class ImportGraph {
 
     private final BatchInserter inserter;
-    private final BatchInserterIndex index;
     private final Map<String, Long> inMemoryIndex;
 
     public ImportGraph(String dataDir) {
         inserter = BatchInserters.inserter(dataDir);
-        final BatchInserterIndexProvider indexProvider = new LuceneBatchInserterIndexProvider(inserter);
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                indexProvider.shutdown();
-                inserter.shutdown();
-            }
-        });
-
-        index = indexProvider.nodeIndex("pages", MapUtil.stringMap("type", "exact", "to_lower_case", "false"));
+        inserter.createDeferredSchemaIndex(WikiLabel.Page).on("title").create();
         inMemoryIndex = new HashMap<String, Long>();
     }
 
@@ -61,11 +48,12 @@ public class ImportGraph {
         ImportGraph importer = new ImportGraph(dataDir);
         importer.createNodes(inputFile);
         importer.createRelationships(inputFile);
+        importer.finish();
     }
 
     public void createNodes(String fileName) throws Exception {
         System.out.println("Importing pages...");
-        NodeCreator nodeCreator = new NodeCreator(inserter, index, inMemoryIndex);
+        NodeCreator nodeCreator = new NodeCreator(inserter, inMemoryIndex);
         long startTime = System.currentTimeMillis();
         nodeCreator.parse(fileName);
         long elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
@@ -80,6 +68,10 @@ public class ImportGraph {
         long elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
         System.out.printf("\n%d links imported in %d seconds; %d broken links ignored\n",
                 relationshipCreator.getLinkCount(), elapsedSeconds, relationshipCreator.getBadLinkCount());
+    }
+
+    public void finish() {
+        inserter.shutdown();
     }
 
 }
