@@ -15,7 +15,6 @@
 
   <modules>
     <module>graphipedia-dataimport</module>
-    <module>graphipedia-query</module>
   </modules>
 
   <dependencyManagement>
