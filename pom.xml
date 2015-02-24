@@ -10,7 +10,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <neo4j.version>2.0.0</neo4j.version>
+    <neo4j.version>2.1.7</neo4j.version>
   </properties>
 
   <modules>
@@ -22,7 +22,7 @@
       <dependency>
         <groupId>org.codehaus.woodstox</groupId>
         <artifactId>woodstox-core-asl</artifactId>
-        <version>4.1.4</version>
+        <version>4.4.1</version>
       </dependency>
       <dependency>
         <groupId>org.neo4j</groupId>
@@ -42,7 +42,7 @@
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.10</version>
+        <version>4.12</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -52,7 +52,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
+        <version>3.2</version>
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
