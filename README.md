@@ -1,13 +1,24 @@
 Graphipedia
 ===========
 
-A tool for creating a graph database of Wikipedia pages and the links between them.
+A tool for creating a [Neo4j](http://neo4j.org) graph database of Wikipedia pages and the links between them.
+
+Building
+--------
+
+This is a Java project built with [Maven](http://maven.apache.org).
+
+Check the `neo4j.version` property in the top-level `pom.xml` file and make sure it matches the Neo4j version
+you intend to use to open the database. Then build with
+
+    mvn package
+
+This will generate a package including all dependencies in `graphipedia-dataimport/target/graphipedia-dataimport.jar`.
 
 Importing Data
 --------------
 
-The graphipedia-dataimport module allows to create a [Neo4j](http://neo4j.org)
-database from a Wikipedia database dump.
+The graphipedia-dataimport module allows to create a Neo4j database from a Wikipedia database dump.
 
 See [Wikipedia:Database_download](http://en.wikipedia.org/wiki/Wikipedia:Database_download)
 for instructions on getting a Wikipedia database dump.

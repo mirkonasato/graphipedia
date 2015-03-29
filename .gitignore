@@ -1,4 +1,6 @@
 target
-.settings
 .classpath
+.idea
 .project
+.settings
+*.iml
