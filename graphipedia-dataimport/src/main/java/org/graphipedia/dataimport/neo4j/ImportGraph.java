@@ -21,6 +21,8 @@
 //
 package org.graphipedia.dataimport.neo4j;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,9 +34,8 @@ public class ImportGraph {
     private final BatchInserter inserter;
     private final Map<String, Long> inMemoryIndex;
 
-    public ImportGraph(String dataDir) {
-        inserter = BatchInserters.inserter(dataDir);
-        inserter.createDeferredSchemaIndex(WikiLabel.Page).on("title").create();
+    public ImportGraph(String dataDir) throws IOException {
+        inserter = BatchInserters.inserter(new File(dataDir));
         inMemoryIndex = new HashMap<String, Long>();
     }
 
@@ -71,6 +72,7 @@ public class ImportGraph {
     }
 
     public void finish() {
+        inserter.createDeferredSchemaIndex(WikiLabel.Page).on("title").create();
         inserter.shutdown();
     }
 
